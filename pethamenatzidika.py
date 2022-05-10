@@ -5,7 +5,7 @@ from vaderSentiment.vaderSentiment import SentimentIntensityAnalyzer
 
 def sentiment_vader(sentence):
     # calculate the negative, positive, neutral and compound scores, plus verbal evaluation
-    # from https://towardsdatascience.com/the-most-favorable-pre-trained-sentiment-classifiers-in-python-9107c06442c6
+    # adapted from https://towardsdatascience.com/the-most-favorable-pre-trained-sentiment-classifiers-in-python-9107c06442c6
 
     # Create a SentimentIntensityAnalyzer object.
     sid_obj = SentimentIntensityAnalyzer()
@@ -24,18 +24,19 @@ def sentiment_vader(sentence):
     return negative, neutral, positive, compound, overall_sentiment
 
 
-feeds = {'google': 'https://news.google.com/rss',
-         'bbc_world': 'http://feeds.bbci.co.uk/news/world/rss.xml',
-         'Al Jazeera': 'http://www.aljazeera.com/xml/rss/all.xml'}
+feeds = {'nytimes_world': 'https://rss.nytimes.com/services/xml/rss/nyt/World.xml',
+         'bbc_world': 'http://feeds.bbci.co.uk/news/world/rss.xml'
+         }
+
 positive = []
 negative = []
 for feed_url in feeds.values():
     print(feed_url)
     for entry in feedparser.parse(feed_url).entries:
-        _, _, _, _, sentiment = sentiment_vader(entry.summary)
-        if sentiment == 'Positive':
+        _, _, _, score, sentiment = sentiment_vader(entry.summary)-
+        if sentiment == 'Positive' and score > 0.5:
             positive.append(entry.title)
-        if sentiment == 'Negative':
+        if sentiment == 'Negative' and score < -0.5:
             negative.append(entry.title)
 
 print("\nPositive:\n")
