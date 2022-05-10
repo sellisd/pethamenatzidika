@@ -1,5 +1,6 @@
 #!/usr/bin/env python3
 import feedparser
+import pandas as pd
 from vaderSentiment.vaderSentiment import SentimentIntensityAnalyzer
 
 
@@ -27,22 +28,14 @@ def sentiment_vader(sentence):
 feeds = {'nytimes_world': 'https://rss.nytimes.com/services/xml/rss/nyt/World.xml',
          'bbc_world': 'http://feeds.bbci.co.uk/news/world/rss.xml'
          }
-
-positive = []
-negative = []
+df = pd.DataFrame(columns=['score', 'sentiment', 'title', 'summary', 'link'], index = range(0,100)) # prepare a large table
+row = 0
 for feed_url in feeds.values():
     print(feed_url)
     for entry in feedparser.parse(feed_url).entries:
-        _, _, _, score, sentiment = sentiment_vader(entry.summary)-
-        if sentiment == 'Positive' and score > 0.5:
-            positive.append(entry.title)
-        if sentiment == 'Negative' and score < -0.5:
-            negative.append(entry.title)
-
-print("\nPositive:\n")
-for title in positive:
-    print(f"- {title}")
-
-print("\nNegative:\n")
-for title in negative:
-    print(f"- {title}")
+        _, _, _, score, sentiment = sentiment_vader(entry.summary)
+        if sentiment == 'Positive' and score > 0.5 or sentiment == 'Negative' and score < -0.5: 
+            df.iloc[row,]=[score, sentiment, entry.title, entry.summary, entry.link]
+            row+=1
+df = df.dropna()
+print(df[df['sentiment']=='Negative'].sort_values(by = ['sentiment','score', 'title'])[['title','link']].to_string(index=False))
